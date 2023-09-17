@@ -1,4 +1,4 @@
-module github.com/sneddonlewis/gobank
+module github.com/sneddonlewis/gomuscle
 
 go 1.19
 
