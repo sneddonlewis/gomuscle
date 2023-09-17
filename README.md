@@ -2,12 +2,10 @@
 
 # GoMuscle 
 
-Docker command for Postgres dev container
+
+## Development
 
 ```
-sudo docker run --name some-postgres /
-    -e POSTGRES_PASSWORD=root /
-    -p 5432:5432 /
-    -d postgres
+docker-compose -f docker-compose-dev.yml up
 ```
 

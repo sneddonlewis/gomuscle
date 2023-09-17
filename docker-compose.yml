@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    container_name: app
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    environment:
+      profile: prod
+      db_host: db
+      db_port: 5432
+      db_name: goxygen
+      db_user: goxygen
+      db_pass: pass
+
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      POSTGRES_DB: goxygen
+      POSTGRES_USER: goxygen
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
