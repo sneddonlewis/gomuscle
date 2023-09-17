@@ -8,6 +8,10 @@ import (
 )
 
 type Storage interface {
+	CreateWorkout() (*Workout, error)
+	GetWorkouts() ([]*Workout, error)
+
+	// FOR REMOVAL
 	CreateAccount(*Account) error
 	DeleteAccount(int) error
 	UpdateAccount(*Account) error
@@ -19,8 +23,8 @@ type PostgresStore struct {
 	db *sql.DB
 }
 
-func NewPostgresStore() (*PostgresStore, error) {
-	connStr := "user=postgres dbname=postgres password=root sslmode=disable"
+func NewPostgresStore(user, dbName, password string) (*PostgresStore, error) {
+	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", user, dbName, password)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
@@ -31,8 +35,100 @@ func NewPostgresStore() (*PostgresStore, error) {
 }
 
 func (s *PostgresStore) Init() error {
-	return s.createAccountTable()
+	return nil
 }
+
+func (s *PostgresStore) CreateWorkout() (*Workout, error) {
+	workout := NewWorkout()
+	query := `
+		INSERT INTO Workout
+		(date) VALUES ($1) RETURNING id
+	`
+	var workoutID int
+	err := s.db.QueryRow(query, workout.Date).Scan(&workoutID)
+	if err != nil {
+		return nil, err
+	}
+
+	workout.ID = workoutID
+	return workout, nil
+}
+
+func (s *PostgresStore) GetWorkouts() ([]*Workout, error) {
+	workoutQuery := "SELECT * FROM Workout"
+
+	rows, err := s.db.Query(workoutQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	workouts := []*Workout{}
+
+	for rows.Next() {
+		workout, err := scanIntoWorkout(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		workingSets, err := s.GetWorkingSets(workout.ID)
+
+		if err != nil {
+			return nil, err
+		}
+		workout.Sets = workingSets
+
+		workouts = append(workouts, workout)
+	}
+
+	return workouts, nil
+}
+
+func (s *PostgresStore) GetWorkingSets(workoutID int) ([]*WorkingSet, error) {
+	setsQuery := "SELECT * FROM working_sets WHERE workout_id = $1"
+	setsRows, err := s.db.Query(setsQuery, workoutID)
+	if err != nil {
+		return nil, err
+	}
+	defer setsRows.Close()
+
+	workingSets := []*WorkingSet{}
+
+	for setsRows.Next() {
+		workingSet, err := scanIntoWorkingSet(setsRows)
+		if err != nil {
+			return nil, err
+		}
+		workingSets = append(workingSets, workingSet)
+	}
+
+	return workingSets, nil
+}
+
+func scanIntoWorkingSet(rows *sql.Rows) (*WorkingSet, error) {
+	workingSet := new(WorkingSet)
+	err := rows.Scan(
+		&workingSet.ID,
+		&workingSet.Exercise,
+		&workingSet.ResistanceKg,
+		&workingSet.Repetitions,
+		&workingSet.NegativeRepetitions,
+		&workingSet.StaticHoldSeconds,
+		&workingSet.WorkoutID,
+	)
+	return workingSet, err
+}
+
+func scanIntoWorkout(rows *sql.Rows) (*Workout, error) {
+	workout := new(Workout)
+	err := rows.Scan(
+		&workout.ID,
+		&workout.Date,
+	)
+	return workout, err
+}
+
+// OLD ACCOUNT STUFF FOR REMOVAL
 
 func (s *PostgresStore) createAccountTable() error {
 	query := `create table if not exists Account (

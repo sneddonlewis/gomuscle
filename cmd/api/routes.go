@@ -19,9 +19,11 @@ func (s *ApiServer) Start() {
 func (s *ApiServer) routes(router *mux.Router) *mux.Router {
 	router.HandleFunc("/v1/health", makeHttpHandlerFunc(s.health))
 
-	router.HandleFunc("/account", makeHttpHandlerFunc(s.handleAccount))
-	router.HandleFunc("/account/{id}", withJWTAuth(makeHttpHandlerFunc(s.handleGetAccountById)))
-	router.HandleFunc("/transfer", makeHttpHandlerFunc(s.handleTransfer))
+	router.HandleFunc("/v1/workout", makeHttpHandlerFunc(s.workout))
+
+	//router.HandleFunc("/account", makeHttpHandlerFunc(s.handleAccount))
+	//router.HandleFunc("/account/{id}", withJWTAuth(makeHttpHandlerFunc(s.handleGetAccountById)))
+	//router.HandleFunc("/transfer", makeHttpHandlerFunc(s.handleTransfer))
 
 	return router
 }

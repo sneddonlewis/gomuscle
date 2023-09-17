@@ -16,6 +16,38 @@ func (s *ApiServer) health(w http.ResponseWriter, r *http.Request) error {
 	return writeJSON(w, http.StatusOK, healthData)
 }
 
+func (s *ApiServer) workout(w http.ResponseWriter, r *http.Request) error {
+	if r.Method == http.MethodGet {
+		return s.getWorkouts(w, r)
+	}
+
+	if r.Method == http.MethodPost {
+		return s.createWorkout(w, r)
+	}
+
+	return fmt.Errorf("Http Request Method Type Not Supported: %s", r.Method)
+}
+
+func (s *ApiServer) createWorkout(w http.ResponseWriter, r *http.Request) error {
+	workout, err := s.store.CreateWorkout()
+
+	if err != nil {
+		return err
+	}
+
+	return writeJSON(w, http.StatusCreated, workout)
+}
+
+func (s *ApiServer) getWorkouts(w http.ResponseWriter, r *http.Request) error {
+	workouts, err := s.store.GetWorkouts()
+
+	if err != nil {
+		return err
+	}
+
+	return writeJSON(w, http.StatusCreated, workouts)
+}
+
 func (s *ApiServer) handleAccount(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
 		return s.handleGetAccount(w, r)
@@ -28,6 +60,7 @@ func (s *ApiServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 	return fmt.Errorf("Http Request Method Type Not Supported: %s", r.Method)
 }
 
+// FOR REMOVAL
 func (s *ApiServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
 	accounts, err := s.store.GetAccounts()
 

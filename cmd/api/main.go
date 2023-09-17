@@ -25,7 +25,7 @@ func main() {
 
 	addr := fmt.Sprintf(":%d", cfg.port)
 
-	store, err := NewPostgresStore()
+	store, err := NewPostgresStore("postgres", "postgres", "root")
 	if err != nil {
 		log.Fatal(err)
 	}

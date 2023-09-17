@@ -5,6 +5,29 @@ import (
 	"time"
 )
 
+type Workout struct {
+	ID   int           `json:"id"`
+	Date time.Time     `json:"date"`
+	Sets []*WorkingSet `json:"sets"`
+}
+
+type WorkingSet struct {
+	ID                  int    `json:"id"`
+	Exercise            string `json:"exercise"`
+	ResistanceKg        int    `json:"resistance_kg"`
+	Repetitions         int    `json:"repitions"`
+	NegativeRepetitions int    `json:"negative_repitions"`
+	StaticHoldSeconds   int    `json:"static_hold_seconds"`
+	WorkoutID           int    `json:"workout_id"`
+}
+
+func NewWorkout() *Workout {
+	return &Workout{
+		Date: time.Now(),
+		Sets: []*WorkingSet{},
+	}
+}
+
 type TransferRequest struct {
 	ToAccount int `json:"to_account"`
 	Amount    int `json:"amount"`
